@@ -1,0 +1,68 @@
+{
+    "api_url": "www.google.com",
+    "base_path_hadoop": "hdfs://namenode:9000/user/hadoop/",
+    "json_config": {
+        "transformations": [
+            {
+                "name": "validation",
+                "params": {
+                    "input": "person_inputs",
+                    "name": "Prueba T\u00e9cnica Data Technologies",
+                    "validations": [
+                        {
+                            "field": "office",
+                            "validations": [
+                                "notEmpty"
+                            ]
+                        },
+                        {
+                            "field": "age",
+                            "validations": [
+                                "notNull"
+                            ]
+                        }
+                    ]
+                },
+                "type": "validate_fields"
+            },
+            {
+                "name": "ok_with_date",
+                "params": {
+                    "addFields": [
+                        {
+                            "function": "current_timestamp",
+                            "name": "dt"
+                        }
+                    ],
+                    "input": "validation_ok"
+                },
+                "type": "add_fields"
+            }
+        ]
+    },
+    "json_config_sync": {
+        "sinks": [
+            {
+                "format": "KAFKA",
+                "input": "ok_with_date",
+                "name": "raw-ok",
+                "topics": [
+                    "person"
+                ]
+            },
+            {
+                "format": "JSON",
+                "input": "validation_ko",
+                "name": "raw-ko",
+                "paths": [
+                    "/data/output/discards/person"
+                ],
+                "saveMode": "OVERWRITE"
+            }
+        ]
+    },
+    "json_path_hdfs": "raw/people/",
+    "kafka_server": "kafka:9092",
+    "spark_server": "spark://spark:7077",
+    "validated_json_path_hdfs": "validated/people/"
+}

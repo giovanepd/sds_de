@@ -1,0 +1,24 @@
+FROM bitnami/spark:3.5
+
+# Switch to root to install packages and manage directories
+USER root
+
+# Install curl (Bitnami images use Debian-based distributions)
+RUN apt-get update && apt-get install -y curl
+
+# Create directory for additional JARs
+RUN mkdir -p /opt/spark/jars
+
+# Download the Spark Kafka connector JAR
+RUN curl -L -o /opt/spark/jars/spark-sql-kafka-0-10_2.12-3.5.0.jar \
+    https://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.12/3.5.0/spark-sql-kafka-0-10_2.12-3.5.0.jar
+
+# (Optional) Clean up apt cache to reduce image size
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Switch back to non-root user for security
+USER 1001
+
+# Set environment variables so Spark finds the JAR
+ENV SPARK_CLASSPATH="/opt/spark/jars/*"
+ENV SPARK_SUBMIT_ARGS="--jars /opt/spark/jars/spark-sql-kafka-0-10_2.12-3.5.0.jar"
